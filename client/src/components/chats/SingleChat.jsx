@@ -27,19 +27,28 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const [isEditting, setIsEditting] = useState(false);
   const [loading, setLoading] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
+  const [name, setName] = useState("");
 
   const dispatch = useDispatch();
+
+  const getUsername = (users = chat.users) => {
+    const username =
+      users[0].username === user.username
+        ? users[1].username
+        : users[0].username;
+    setName(username);
+  };
+
+  useEffect(() => {
+    if (!chat) return;
+    getUsername();
+  }, [chat]);
 
   useEffect(() => {
     socket = io(ENDPOINT);
     socket.emit("setup", user);
     socket.on("connected", () => setSocketConnected(true));
   }, []);
-
-  useEffect(() => {
-    if (!chat) return;
-    getUsername();
-  }, [dispatch, chat, loading]);
 
   const deleteHandler = async () => {
     if (!window.confirm("Are you sure you want to delete this chat?")) return;
@@ -161,7 +170,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   };
   useEffect(() => {
     fetchMessages();
-    selectedChatCompare = chat;
+    selectedChatCompare = chat;    
   }, [chat, fetchAgain]);
 
   useEffect(() => {
@@ -199,12 +208,12 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                       : chat.users[0].profilePic
                     : chat.groupProfilePic
                 }
-                alt={!chat.isGroupChat ? getSender(user,chat.users) : chat.chatName}
+                alt={chat.isGroupChat ? chat.chatName : name}
                 className="h-10 w-10 rounded-full object-cover cursor-pointer"
                 onClick={() => setIsChatProfileOpen(true)}
               />
               <p className="text-xl font-medium">
-                {!chat.isGroupChat ? getSender(user,chat.users) : chat.chatName}
+              {chat.isGroupChat ? chat.chatName : name}
               </p>
             </div>
             <div className="flex items-center gap-3 sm:gap-5">
