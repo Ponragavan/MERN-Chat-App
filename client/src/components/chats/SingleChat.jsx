@@ -101,6 +101,7 @@ const SingleChat = ({fetchAgain,setFetchAgain}) => {
     if (response.ok) {
       toast.success("You are no longer a member of this group.");
       dispatch(setChat(null));
+      setMessages([]);
     } else {
       toast.error(data.message);
     }
@@ -162,7 +163,7 @@ const SingleChat = ({fetchAgain,setFetchAgain}) => {
   useEffect(() => {
     fetchMessages();
     selectedChatCompare = chat;
-  }, [chat]);
+  }, [chat,fetchAgain]);
 
   useEffect(() => {
     socket.on("message recieved", (newMessageRecieved) => {
