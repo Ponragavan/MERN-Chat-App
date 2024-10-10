@@ -6,7 +6,7 @@ import { setSearchKeyword } from "../../slices/searchSlice";
 import { toast } from "react-toastify";
 import { setChat, setChats } from "../../slices/chatSlice";
 
-const CreateGroup = ({ onClose }) => {
+const CreateGroup = ({ onClose,setFetchAgain,fetchAgain }) => {
   const [groupName, setGroupName] = useState("");
   const [avatar, setAvatar] = useState();
   const [selectedMembers, setSelectedMembers] = useState([]);
@@ -96,6 +96,7 @@ const CreateGroup = ({ onClose }) => {
       dispatch(setChats([data, ...chats]));
       dispatch(setChat(data));
       dispatch(setSearchKeyword(""));
+      setFetchAgain(!fetchAgain);
       toast.success("Group created successfully");
       onClose();
     } else {

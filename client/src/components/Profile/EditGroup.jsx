@@ -57,41 +57,57 @@ const EditGroup = ({ onClose }) => {
     );
     const data = await response.json();
     if (response.ok) {
-      setSelectedMembers([...selectedMembers, user]);
+      const updatedChat = { ...chat, users: [...selectedMembers, user] };
+      setSelectedMembers(updatedChat.users);
+      dispatch(setChat(updatedChat));
+      toast.success("User added to group successfully");
+      dispatch(setSearchKeyword(""));
     } else {
       toast.error(data.message);
     }
   };
-
+  
   const handleDelete = async (user) => {
     if (chat?.isGroupChat && chat?.groupAdmin?._id === user._id) {
-        toast.warning("Admin can't be removed from the group");
-        return;
-      }
-    const response = await fetch(
-      `${import.meta.env.VITE_BACKEND_URL}/api/chat/groupremove`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          chatId: chat._id,
-          userId: user._id,
-        }),
-      }
+      toast.warning("Admin can't be removed from the group");
+      return;
+    }
+    
+    const updatedMembers = selectedMembers.filter(
+      (member) => member._id !== user._id
     );
-    const data = await response.json();
-    if (response.ok) {
-      toast.success("User removed from group successfully");
-      setSelectedMembers(
-        selectedMembers.filter((member) => member._id !== user._id)
+    setSelectedMembers(updatedMembers);
+  
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/chat/groupremove`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            chatId: chat._id,
+            userId: user._id,
+          }),
+        }
       );
-    } else {
-      toast.error(data.message);
+      const data = await response.json();
+      if (response.ok) {
+        const updatedChat = { ...chat, users: updatedMembers };
+        setSelectedMembers(updatedChat.users);
+        dispatch(setChat(updatedChat));
+        toast.success("User removed from group successfully");
+      } else {
+        toast.error(data.message || "Failed to remove user from the group");
+      }
+    } catch (error) {
+      toast.error("An error occurred. Please try again.");
     }
   };
+  
+  
 
   const handleRename = async () => {
     if (!groupName) {
@@ -161,6 +177,7 @@ const EditGroup = ({ onClose }) => {
             name="group-members"
             className="mt-1 block w-full px-3 py-2 border-gray-300 rounded-md shadow-sm outline-none focus:border-2 focus:border-cyan-500"
             onChange={(e) => dispatch(setSearchKeyword(e.target.value))}
+            value={keyword}
           />
         </div>
         {selectedMembers.length > 0 && (

@@ -1,3 +1,4 @@
+import { IoIosNotifications } from "react-icons/io"; 
 import { CgSearch } from "react-icons/cg";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -7,28 +8,40 @@ import Search from "../components/chats/Search";
 import Profile from "../components/Profile/Profile";
 import MyChats from "../components/chats/MyChats";
 import ChatBox from "../components/chats/ChatBox";
+import Spinner from "../components/Spinner";
+import Notification from "../components/chats/Notification";
+import NotificationBadge, { Effect } from "react-notification-badge";
 
 const Chats = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [fetchAgain, setFetchAgain] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const user = useSelector((state) => state.user.user);
+  const {notification} = useSelector((state) => state.notification);
   const dispatch = useDispatch();
 
   useEffect(() => {
     async function getUser() {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/auth/user`,
-        {
-          method: "GET",
-          credentials: "include",
+      setLoading(true)
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/auth/user`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+        const data = await response.json();
+        if (response.ok) {
+          dispatch(login(data));
         }
-      );
-      const data = await response.json();      
-      if (response.ok) {
-        dispatch(login(data));
-      } else {
+      } catch (error) {
+        console.error(error.message);
+      } finally {
+       setLoading(false);
       }
     }
     getUser();
@@ -45,6 +58,9 @@ const Chats = () => {
           </h2>
         </div>
         <div className="flex items-center gap-5 sm:flex">
+          <div>
+            <NotificationBadge count={notification.length} effect={Effect.SCALE} />
+            <IoIosNotifications size={30} className="text-white cursor-pointer" onClick={() => setIsNotificationOpen(true)} /></div>
           <CgSearch
             size={30}
             className="text-white sm:hidden"
@@ -71,14 +87,17 @@ const Chats = () => {
       </nav>
       {isSearchOpen && <Search onClose={() => setIsSearchOpen(false)} />}
       {isProfileOpen && <Profile onClose={() => setIsProfileOpen(false)} />}
-      <div className="grid grid-cols-4 gap-6 p-3 pt-20">
-        {user && (
-          <MyChats fetchAgain={fetchAgain} />
-        )}
-        {user && (
-          <ChatBox setFetchAgain={setFetchAgain} fetchAgain={fetchAgain} />
-        )}
-      </div>
+        {isNotificationOpen && <Notification onClose={() => setIsNotificationOpen(false)} />}
+      {loading ? (
+        <Spinner size='lg' />
+      ) : (
+        <div className="grid grid-cols-4 gap-6 p-3 pt-20">
+          {user && <MyChats setFetchAgain={setFetchAgain} fetchAgain={fetchAgain} />}
+          {user && (
+            <ChatBox setFetchAgain={setFetchAgain} fetchAgain={fetchAgain} />
+          )}
+        </div>
+      )}
     </div>
   );
 };

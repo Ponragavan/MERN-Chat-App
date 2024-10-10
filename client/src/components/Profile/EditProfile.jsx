@@ -3,6 +3,7 @@ import Backdrop from "../BackDrop";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { login } from "../../slices/userSlice";
+import Spinner from "../Spinner";
 
 const EditProfile = ({ onClose }) => {
   const user = useSelector((state) => state.user.user);
@@ -122,7 +123,7 @@ const EditProfile = ({ onClose }) => {
               className="w-10/12 px-4 py-2 text-white transition duration-200 bg-indigo-500 rounded-lg hover:bg-indigo-600"
               disabled={loading}
             >
-              {loading ? "Verifying..." : "Verify"}
+              {loading ? <Spinner size="sm" layout="h-full" /> : "Verify"}
             </button>
           </form>
         ) : (
@@ -165,8 +166,9 @@ const EditProfile = ({ onClose }) => {
             <button
               type="submit"
               className="w-10/12 px-4 py-2 text-white transition duration-200 bg-indigo-500 rounded-lg hover:bg-indigo-600"
+              disabled={loading}
             >
-              Update Profile
+              {loading ? <Spinner size="sm" layout="h-full" /> : 'Update Profile'}
             </button>
           </form>
         )}

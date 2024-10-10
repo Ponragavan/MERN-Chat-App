@@ -1,4 +1,3 @@
-import { BiSend } from "react-icons/bi";
 import { RxExit } from "react-icons/rx";
 import { BiEdit } from "react-icons/bi";
 import { RiDeleteBin5Line } from "react-icons/ri";
@@ -9,22 +8,24 @@ import { setChat } from "../../slices/chatSlice";
 import { toast } from "react-toastify";
 import ChatProfile from "../Profile/ChatProfile";
 import EditGroup from "../Profile/EditGroup";
-import { setLoading } from "../../slices/fetchSlice";
 import Messages from "./Messages";
 import io from "socket.io-client";
+import Spinner from "../Spinner";
+import { setNotification } from "../../slices/notificationSlice";
 
 const ENDPOINT = import.meta.env.VITE_BACKEND_URL;
 var socket, selectedChatCompare;
 
-const SingleChat = ({fetchAgain,setFetchAgain}) => {
+const SingleChat = ({ fetchAgain, setFetchAgain }) => {
+  const {notification} = useSelector((state) => state.notification);
   const user = useSelector((state) => state.user.user);
-  const loading = useSelector((state) => state.fetch.loading);
   const { chat } = useSelector((state) => state.chats);
   const [name, setName] = useState("");
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [isChatProfileOpen, setIsChatProfileOpen] = useState(false);
   const [isEditting, setIsEditting] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
 
   const dispatch = useDispatch();
@@ -54,9 +55,8 @@ const SingleChat = ({fetchAgain,setFetchAgain}) => {
       toast.warning("Only group admin can delete the group");
       return;
     }
-    dispatch(setChat(null));
     try {
-      dispatch(setLoading(true));
+      setLoading(true);
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/api/chat/deletechat`,
         {
@@ -71,19 +71,21 @@ const SingleChat = ({fetchAgain,setFetchAgain}) => {
       if (response.ok) {
         toast.success("Chat deleted successfully");
         setFetchAgain(!fetchAgain);
+        setMessages([]);
+        dispatch(setChat(null));
       } else {
         toast.error("Can't delete chat");
       }
     } catch (error) {
       toast.error("Cannot delete chat");
     } finally {
-      dispatch(setLoading(false));
+      setLoading(false);
     }
   };
 
   const handleLeave = async () => {
     if (!window.confirm("Are you sure you want to leave this group?")) return;
-    dispatch(setLoading(true));
+    setLoading(true);
     const response = await fetch(
       `${import.meta.env.VITE_BACKEND_URL}/api/chat/groupremove`,
       {
@@ -102,6 +104,7 @@ const SingleChat = ({fetchAgain,setFetchAgain}) => {
     if (response.ok) {
       toast.success("You are no longer a member of this group.");
       dispatch(setChat(null));
+      setFetchAgain(!fetchAgain);
       setMessages([]);
     } else {
       toast.error(data.message);
@@ -142,6 +145,7 @@ const SingleChat = ({fetchAgain,setFetchAgain}) => {
 
   const fetchMessages = async () => {
     if (!chat) return;
+    setLoading(true);
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/api/message/${chat._id}`,
@@ -159,21 +163,26 @@ const SingleChat = ({fetchAgain,setFetchAgain}) => {
       }
     } catch (error) {
       toast.error("Error in fetching messages");
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
     fetchMessages();
     selectedChatCompare = chat;
-  }, [chat,fetchAgain]);
+  }, [chat, fetchAgain]);
 
   useEffect(() => {
     socket.on("message recieved", (newMessageRecieved) => {
       if (
-        !selectedChatCompare ||
+        !selectedChatCompare || // if chat is not selected or doesn't match current chat
         selectedChatCompare._id !== newMessageRecieved.chat._id
-      ){
-        setFetchAgain(!fetchAgain);
-      }else {
+      ) {
+        if (!notification.includes(newMessageRecieved)) {
+          dispatch(setNotification([newMessageRecieved, ...notification]));
+          setFetchAgain(!fetchAgain);
+        }
+      } else {
         setMessages([...messages, newMessageRecieved]);
       }
     });
@@ -225,18 +234,24 @@ const SingleChat = ({fetchAgain,setFetchAgain}) => {
               />
             </div>
           </header>
-          <Messages messages={messages} />
-          <form className="flex" onSubmit={handleSendMessage}>
-            <input
-              type="text"
-              className="flex-grow px-3 py-2 outline-none rounded-md border-2 bg-slate-100 focus:border-slate-400"
-              value={newMessage}
-              placeholder="Enter a message"
-              onChange={handleChange}
-              autoFocus
-            />
-            <button type="submit"></button>
-          </form>
+          {loading && !messages ? (
+            <Spinner size="lg" layout="h-[70vh]" />
+          ) : (
+            <>
+              <Messages messages={messages} />
+              <form className="flex" onSubmit={handleSendMessage}>
+                <input
+                  type="text"
+                  className="flex-grow px-3 py-2 outline-none rounded-md border-2 bg-slate-100 focus:border-slate-400"
+                  value={newMessage}
+                  placeholder="Enter a message"
+                  onChange={handleChange}
+                  autoFocus
+                />
+                <button type="submit"></button>
+              </form>
+            </>
+          )}
         </div>
       ) : (
         <div className="flex items-center justify-center h-full roumd">
@@ -248,7 +263,7 @@ const SingleChat = ({fetchAgain,setFetchAgain}) => {
       {isChatProfileOpen && (
         <ChatProfile onClose={() => setIsChatProfileOpen(false)} />
       )}
-      {isEditting && <EditGroup onClose={() => setIsEditting(false)} />}
+      {isEditting && <EditGroup fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} onClose={() => setIsEditting(false)} />}
     </div>
   );
 };

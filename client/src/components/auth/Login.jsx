@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import Spinner from "../Spinner";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -76,8 +77,9 @@ const Login = () => {
           <button
             type="submit"
             className="w-10/12 px-4 py-2 text-white transition duration-200 bg-indigo-500 rounded-lg hover:bg-indigo-600"
+            disabled={loading}
           >
-            Login
+            {loading? <Spinner size="sm" layout="h-full" /> : 'Login'}
           </button>
           <p>
             Don't have an account?{" "}
