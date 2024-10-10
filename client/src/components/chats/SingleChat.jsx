@@ -12,6 +12,7 @@ import Messages from "./Messages";
 import io from "socket.io-client";
 import Spinner from "../Spinner";
 import { setNotification } from "../../slices/notificationSlice";
+import { getSender } from "../../ChatLogics";
 
 const ENDPOINT = import.meta.env.VITE_BACKEND_URL;
 var socket, selectedChatCompare;
@@ -20,7 +21,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const {notification} = useSelector((state) => state.notification);
   const user = useSelector((state) => state.user.user);
   const { chat } = useSelector((state) => state.chats);
-  const [name, setName] = useState("");
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [isChatProfileOpen, setIsChatProfileOpen] = useState(false);
@@ -29,14 +29,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const [socketConnected, setSocketConnected] = useState(false);
 
   const dispatch = useDispatch();
-
-  const getUsername = (users = chat.users) => {
-    const username =
-      users[0].username === user.username
-        ? users[1].username
-        : users[0].username;
-    setName(username);
-  };
 
   useEffect(() => {
     socket = io(ENDPOINT);
@@ -207,12 +199,12 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                       : chat.users[0].profilePic
                     : chat.groupProfilePic
                 }
-                alt={name}
+                alt={!chat.isGroupChat ? getSender(user,chat.users) : chat.chatName}
                 className="h-10 w-10 rounded-full object-cover cursor-pointer"
                 onClick={() => setIsChatProfileOpen(true)}
               />
               <p className="text-xl font-medium">
-                {!chat.isGroupChat ? name : chat.chatName}
+                {!chat.isGroupChat ? getSender(user,chat.users) : chat.chatName}
               </p>
             </div>
             <div className="flex items-center gap-3 sm:gap-5">
