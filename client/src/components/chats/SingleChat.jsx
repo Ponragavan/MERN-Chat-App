@@ -70,6 +70,7 @@ const SingleChat = ({fetchAgain,setFetchAgain}) => {
       );
       if (response.ok) {
         toast.success("Chat deleted successfully");
+        setFetchAgain(!fetchAgain);
       } else {
         toast.error("Can't delete chat");
       }
