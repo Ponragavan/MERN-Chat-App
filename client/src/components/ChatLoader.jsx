@@ -3,7 +3,7 @@ import React from 'react';
 const ChatLoader = () => {
   return (
     <div className="flex flex-col space-y-4">
-      {[...Array(6)].map((_, index) => (
+      {[...Array(8)].map((_, index) => (
         <div
           key={index}
           className="flex items-center h-16 gap-3 p-3 bg-white rounded-md shadow animate-pulse"
