@@ -39,8 +39,11 @@ const navigate = useNavigate();
       const data = await response.json();
       if (response.ok && data) {
         dispatch(login(data));
+      } else if (response.status === 404) {
+        toast.warning("User not found");
+        navigate("/");
       } else {
-        toast.warning("User not found or session expired");
+        toast.warning("Session expired or error occurred");
         navigate("/");
       }
     } catch (error) {
