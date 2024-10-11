@@ -9,6 +9,7 @@ import Profile from "../components/Profile/Profile";
 import MyChats from "../components/chats/MyChats";
 import ChatBox from "../components/chats/ChatBox";
 import Spinner from "../components/Spinner";
+import { useNavigate } from "react-router-dom";
 import Notification from "../components/chats/Notification";
 import NotificationBadge, { Effect } from "react-notification-badge";
 
@@ -22,30 +23,36 @@ const Chats = () => {
   const user = useSelector((state) => state.user.user);
   const {notification} = useSelector((state) => state.notification);
   const dispatch = useDispatch();
+const navigate = useNavigate();
 
   useEffect(() => {
-    async function getUser() {
-      setLoading(true)
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/api/auth/user`,
-          {
-            method: "GET",
-            credentials: "include",
-          }
-        );
-        const data = await response.json();
-        if (response.ok) {
-          dispatch(login(data));
+  async function getUser() {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/auth/user`,
+        {
+          method: "GET",
+          credentials: "include",
         }
-      } catch (error) {
-        console.error(error.message);
-      } finally {
-       setLoading(false);
+      );
+      const data = await response.json();
+      if (response.ok && data) {
+        dispatch(login(data));
+      } else {
+        toast.warning("User not found or session expired");
+        navigate("/");
       }
+    } catch (error) {
+      console.error(error.message);
+      toast.error("Failed to fetch user data");
+      navigate("/");
+    } finally {
+      setLoading(false);
     }
-    getUser();
-  }, [dispatch]);
+  }
+  getUser();
+}, [dispatch, navigate]);
 
   return (
     <div className="bg-slate-50 min-h-screen">
