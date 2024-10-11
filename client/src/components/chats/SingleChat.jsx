@@ -176,18 +176,31 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   useEffect(() => {
     socket.on("message recieved", (newMessageRecieved) => {
       if (
-        !selectedChatCompare || // if chat is not selected or doesn't match current chat
+        !selectedChatCompare ||
         selectedChatCompare._id !== newMessageRecieved.chat._id
       ) {
-        if (!notification.includes(newMessageRecieved)) {
+        const existingNotification = notification.find(
+          (notif) => notif.chat._id === newMessageRecieved.chat._id
+        );
+  
+        if (!existingNotification) {
           dispatch(setNotification([newMessageRecieved, ...notification]));
-          setFetchAgain(!fetchAgain);
+        } else {
+          const updatedNotifications = notification.map((notif) =>
+            notif.chat._id === newMessageRecieved.chat._id
+              ? newMessageRecieved
+              : notif
+          );
+          dispatch(setNotification(updatedNotifications));
         }
+  
+        setFetchAgain(!fetchAgain);
       } else {
         setMessages([...messages, newMessageRecieved]);
       }
     });
-  });
+  }, [notification, messages, selectedChatCompare, fetchAgain, socket, dispatch]);
+  
 
   return (
     <div>

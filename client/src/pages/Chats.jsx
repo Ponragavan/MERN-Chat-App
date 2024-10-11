@@ -12,6 +12,7 @@ import Spinner from "../components/Spinner";
 import { useNavigate } from "react-router-dom";
 import Notification from "../components/chats/Notification";
 import NotificationBadge, { Effect } from "react-notification-badge";
+import { toast } from "react-toastify";
 
 const Chats = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -36,20 +37,18 @@ const navigate = useNavigate();
           credentials: "include",
         }
       );
-      const data = await response.json();
-      
+      const data = await response.json();      
       if (response.ok && data) {
         dispatch(login(data));
       } else if (response.status === 404) {
-        toast.warning("User not found");
+        toast.warning(data.message);
         navigate("/");
       } else {
-        toast.warning("Session expired or error occurred");
+        toast.warning(data.message);
         navigate("/");
       }
     } catch (error) {
-      console.error(error.message);
-      toast.error("Failed to fetch user data");
+      toast.error("An error occurred. Please try again later.");
       navigate("/");
     } finally {
       setLoading(false);
