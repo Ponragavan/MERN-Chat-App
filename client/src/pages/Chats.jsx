@@ -37,6 +37,7 @@ const navigate = useNavigate();
         }
       );
       const data = await response.json();
+      
       if (response.ok && data) {
         dispatch(login(data));
       } else if (response.status === 404) {
@@ -54,8 +55,11 @@ const navigate = useNavigate();
       setLoading(false);
     }
   }
-  getUser();
-}, [dispatch, navigate]);
+
+  if (!user) {
+    getUser();
+  }
+}, [dispatch, navigate, user]);
 
   return (
     <div className="bg-slate-50 min-h-screen">
