@@ -42,8 +42,8 @@ To run this project locally, follow these steps:
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/instantinteract.git
-    cd instantinteract/backend
+    git clone https://github.com/Ponragavan/MERN-Chat-App.git
+    cd MERN-Chat-App/server
     ```
 
 2. Install dependencies:
@@ -68,7 +68,7 @@ To run this project locally, follow these steps:
 
 1. Navigate to the frontend directory:
     ```bash
-    cd ../frontend
+    cd ../client
     ```
 
 2. Install dependencies
