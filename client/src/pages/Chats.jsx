@@ -1,4 +1,4 @@
-import { IoIosNotifications } from "react-icons/io"; 
+import { IoIosNotifications } from "react-icons/io";
 import { CgSearch } from "react-icons/cg";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -22,43 +22,43 @@ const Chats = () => {
   const [loading, setLoading] = useState(false);
 
   const user = useSelector((state) => state.user.user);
-  const {notification} = useSelector((state) => state.notification);
+  const { notification } = useSelector((state) => state.notification);
   const dispatch = useDispatch();
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
-  async function getUser() {
-    setLoading(true);
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/auth/user`,
-        {
-          method: "GET",
-          credentials: "include",
+    async function getUser() {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/auth/user`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+        const data = await response.json();
+        if (response.ok && data) {
+          dispatch(login(data));
+        } else if (response.status === 404) {
+          toast.warning(data.message);
+          navigate("/");
+        } else {
+          toast.warning(data.message);
+          navigate("/");
         }
-      );
-      const data = await response.json();      
-      if (response.ok && data) {
-        dispatch(login(data));
-      } else if (response.status === 404) {
-        toast.warning(data.message);
+      } catch (error) {
+        toast.error("An error occurred. Please try again later.");
         navigate("/");
-      } else {
-        toast.warning(data.message);
-        navigate("/");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      toast.error("An error occurred. Please try again later.");
-      navigate("/");
-    } finally {
-      setLoading(false);
     }
-  }
 
-  if (!user) {
-    getUser();
-  }
-}, [dispatch, navigate, user]);
+    if (!user) {
+      getUser();
+    }
+  }, [dispatch, navigate, user]);
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -71,9 +71,16 @@ const navigate = useNavigate();
           </h2>
         </div>
         <div className="flex items-center gap-5 sm:flex">
-          <div>
-            <NotificationBadge count={notification.length} effect={Effect.SCALE} />
-            <IoIosNotifications size={30} className="text-white cursor-pointer" onClick={() => setIsNotificationOpen(true)} /></div>
+          <div onClick={() => setIsNotificationOpen(true)}>
+            <NotificationBadge
+              count={notification.length}
+              effect={Effect.SCALE}
+            />
+            <IoIosNotifications
+              size={30}
+              className="text-white cursor-pointer"
+            />
+          </div>
           <CgSearch
             size={30}
             className="text-white sm:hidden"
@@ -100,12 +107,16 @@ const navigate = useNavigate();
       </nav>
       {isSearchOpen && <Search onClose={() => setIsSearchOpen(false)} />}
       {isProfileOpen && <Profile onClose={() => setIsProfileOpen(false)} />}
-        {isNotificationOpen && <Notification onClose={() => setIsNotificationOpen(false)} />}
+      {isNotificationOpen && (
+        <Notification setFetchAgain={setFetchAgain} fetchAgain={fetchAgain} onClose={() => setIsNotificationOpen(false)} />
+      )}
       {loading ? (
-        <Spinner size='lg' />
+        <Spinner size="lg" />
       ) : (
         <div className="grid grid-cols-4 gap-6 p-3 pt-20">
-          {user && <MyChats setFetchAgain={setFetchAgain} fetchAgain={fetchAgain} />}
+          {user && (
+            <MyChats setFetchAgain={setFetchAgain} fetchAgain={fetchAgain} />
+          )}
           {user && (
             <ChatBox setFetchAgain={setFetchAgain} fetchAgain={fetchAgain} />
           )}

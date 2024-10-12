@@ -1,7 +1,6 @@
 import React from "react";
 import Backdrop from "../BackDrop";
 import { useDispatch, useSelector } from "react-redux";
-import { getSender } from "../../ChatLogics";
 import { setChat } from "../../slices/chatSlice";
 import { setNotification } from "../../slices/notificationSlice";
 
@@ -10,6 +9,7 @@ const Notification = ({ onClose }) => {
   const updatedNotification = notification.filter((n) => n.sender.username )
   const dispatch = useDispatch();
   const handleClick = (chatFromNotification) => {
+    console.log(chatFromNotification);
     dispatch(setChat(chatFromNotification.chat));
     dispatch(setNotification(notification.filter((n) => n !== chatFromNotification)));
     onClose();
@@ -20,7 +20,7 @@ const Notification = ({ onClose }) => {
         {!notification.length && (
           <p className="text-gray-500 text-center">No notifications</p>
         )}
-        {notification.map((note) => (
+        {updatedNotification.map((note) => (
              <div
              key={note._id}
              className="flex items-center gap-3 p-2 rounded-md hover:bg-green-300 cursor-pointer"
