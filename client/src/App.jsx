@@ -1,10 +1,10 @@
-import React from "react";
+import React, { lazy } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Home from "./pages/Home";
-import Auth from "./pages/Auth";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Chats from "./pages/Chats";
+const Home = lazy(() => import("./pages/Home"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Chats = lazy(() => import("./pages/Chats"));
 
 
 const App = () => {
