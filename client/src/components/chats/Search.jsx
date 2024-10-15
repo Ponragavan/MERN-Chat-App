@@ -15,6 +15,10 @@ const Search = ({ onClose }) => {
 
   useEffect(() => {
     async function searchUsers() {
+      if (!keyword){
+         setUsers([]);
+         return;
+      }
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/api/auth/users?search=${keyword}`,
         {
